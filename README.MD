@@ -1,6 +1,8 @@
 APA102-POV
 ==========
 
+![3D Render of APA102-POV board](/images/3drender_apa102-pov_rev1.png?raw=true "Revision 1")
+
 This is a persistence of vision display using the APA102 RGB LED modules. I whipped this design up on the spot at Anool Mahidharia's KiCAD workshop (I hadn't relaly planned ahead to have a design ready). It is untested and definitely a work in progress.
 
 Features:
