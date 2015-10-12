@@ -60,20 +60,21 @@ void shiftByte(uint8_t data) {
 }
 
 void shiftZero(void) {
-    LED_PORT &= ~(LED_DATA | LED_CLOCK);    //Data and Clock low
+    LED_PORT &= ~LED_DATA;    //low
     LED_PORT |= LED_CLOCK;                  //Raise Clock to shift in Data
+    LED_PORT &= ~LED_CLOCK;                  //Clock low
 }
 
 void shiftOne(void) {
     LED_PORT |= LED_DATA;                   //Data high
-    LED_PORT &= LED_CLOCK;                  //Clock low
     LED_PORT |= LED_CLOCK;                  //Raise Clock to shift in Data
+    LED_PORT &= ~LED_CLOCK;                  //Clock low
 }
 
 void init_IO(void) {
     //BitBang LEDS
     LED_DDR |= LED_DATA | LED_CLOCK;
-    LED_PORT |= LED_DATA | LED_CLOCK;       //Clock needs to be high
+    LED_PORT &= ~(LED_DATA | LED_CLOCK);       //start low
     
     //Buttons
     BUT_DDR &= ~(BUT_SW1 | BUT_SW2 | BUT_SW3);      //Set as input
