@@ -21,7 +21,7 @@
 /************** Setup input buttons *********************/
 #define BUT_DDR     DDRD
 #define BUT_PORT    PORTD
-#define BUT_PIN     PINd
+#define BUT_PIN     PIND
 #define BUT_SW1    (1<<PD5)
 #define BUT_SW2     (1<<PD6)
 #define BUT_SW3     (1<<PD7)
@@ -66,8 +66,7 @@ void endFrame(void) {
 
 void pushPixel(uint8_t brightness, uint8_t r, uint8_t g, uint8_t b) {
     //Brightness only uses 5 LSB. 3 MSB must all be 1
-    brightness |= 0b11100000 & brightness;
-    shiftByte(brightness);    shiftByte(b);   shiftByte(g);   shiftByte(r);
+    shiftByte(0b11100000 | brightness);    shiftByte(b);   shiftByte(g);   shiftByte(r);
 }
 void shiftByte(uint8_t data) {
     for (uint8_t i=0; i<8; i++) {
@@ -102,6 +101,20 @@ void init_interrupts(void) {
 
 }
 
+void fadeForever(void) {
+    uint8_t fade = 0;
+    while(1)
+    {
+        if (++fade > 31) { fade = 0; }
+        startFrame();
+        pushPixel(fade, 0xFF, 0x00, 0x00);
+        pushPixel(fade, 0x00, 0xFF, 0x00);
+        pushPixel(fade, 0x00, 0x00, 0xFF);
+        endFrame();
+        _delay_ms(20);
+    }
+}
+
 int main(void)
 {
     init_IO();
@@ -110,9 +123,14 @@ int main(void)
     _delay_ms(200);
 
     POST();
+    
+    while (BUT_PIN & BUT_SW3) {
+        ; //Loop until the button is pressed
+    }
 
+    uint8_t fade = 0;
     while(1)
     {
-
+        fadeForever();
     }
 }
