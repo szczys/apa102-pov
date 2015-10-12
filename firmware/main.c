@@ -128,9 +128,66 @@ int main(void)
         ; //Loop until the button is pressed
     }
 
-    uint8_t fade = 0;
+    uint8_t cycleRed = 0xFF;
+    uint8_t cycleGreen = 0;
+    uint8_t cycleBlue = 0;
+    /*
+    128, 0, 0
+    120, 8, 0
+    112, 16, 0
+    104, 24, 0
+    96, 32, 0
+    88, 40, 0
+    80, 48, 0
+    72, 56, 0
+    64, 64, 0
+    */
+
     while(1)
     {
-        fadeForever();
+        //fadeForever();
+        //down red
+        
+        while (cycleRed > 0) {
+            cycleRed -= 1;
+            cycleGreen = 0xFF - cycleRed;
+        
+            startFrame();
+            pushPixel(5, cycleRed, cycleGreen, cycleBlue);
+            pushPixel(5, cycleRed, cycleGreen, cycleBlue);
+            pushPixel(5, cycleRed, cycleGreen, cycleBlue);
+            endFrame();
+
+            _delay_ms(2);
+        }
+        
+        while (cycleGreen > 0) {
+            cycleGreen -= 1;
+            cycleBlue = 0xFF - cycleGreen;
+        
+            startFrame();
+            pushPixel(5, cycleRed, cycleGreen, cycleBlue);
+            pushPixel(5, cycleRed, cycleGreen, cycleBlue);
+            pushPixel(5, cycleRed, cycleGreen, cycleBlue);
+            endFrame();
+
+            _delay_ms(2);
+        }
+        
+        while (cycleBlue > 0) {
+            cycleBlue -= 1;
+            cycleRed = 0xFF - cycleBlue;
+        
+            startFrame();
+            pushPixel(5, cycleRed, cycleGreen, cycleBlue);
+            pushPixel(5, cycleRed, cycleGreen, cycleBlue);
+            pushPixel(5, cycleRed, cycleGreen, cycleBlue);
+            endFrame();
+
+            _delay_ms(2);
+        }
+        //down green
+        //down blue
+        
     }
 }
