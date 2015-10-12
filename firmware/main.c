@@ -6,7 +6,7 @@
 *				                *
 ********************************/
 
-#define F_CPU 8000000
+#define F_CPU 1000000
 
 #include <avr/io.h>
 #include <util/delay.h>
@@ -28,6 +28,9 @@
 
 /**************** Prototypes *************************************/
 void POST(void);
+void startFrame(void);
+void endFrame(void);
+void pushPixel(uint8_t brightness, uint8_t r, uint8_t g, uint8_t b);
 void shiftByte(uint8_t data);
 void shiftZero(void);
 void shiftOne(void);
@@ -38,20 +41,34 @@ void init_interrupts(void);
 void POST(void) {
     //Bit Bang the LEDs to ensure they work despite hardware SPI
     
-    //Start fram (0*32);
-    shiftByte(0x00);    shiftByte(0x00);   shiftByte(0x00);   shiftByte(0x00);
+    startFrame();
     
     //Shift Red
-    shiftByte(0xFF);    shiftByte(0x00);   shiftByte(0x00);   shiftByte(0xFF);
+    pushPixel(0xFF, 0xFF, 0x00, 0x00);
     //Shift Green
-    shiftByte(0xFF);    shiftByte(0x00);   shiftByte(0xFF);   shiftByte(0x00);
+    pushPixel(0xFF, 0x00, 0xFF, 0x00);
     //Shift Blue
-    shiftByte(0xFF);    shiftByte(0xFF);   shiftByte(0x00);   shiftByte(0x00);
+    pushPixel(0xFF, 0x00, 0x00, 0xFF);
+
+    endFrame();
     
+}
+
+void startFrame(void) {
+    //Start frame (0*32);
+    shiftByte(0x00);    shiftByte(0x00);   shiftByte(0x00);   shiftByte(0x00);
+}
+
+void endFrame(void) {
     //End frame (1*32);
     shiftByte(0xFF);    shiftByte(0xFF);   shiftByte(0xFF);   shiftByte(0xFF);
 }
 
+void pushPixel(uint8_t brightness, uint8_t r, uint8_t g, uint8_t b) {
+    //Brightness only uses 5 LSB. 3 MSB must all be 1
+    brightness |= 0b11100000 & brightness;
+    shiftByte(brightness);    shiftByte(b);   shiftByte(g);   shiftByte(r);
+}
 void shiftByte(uint8_t data) {
     for (uint8_t i=0; i<8; i++) {
         if (data & (1<<(7-i))) { shiftOne(); }
