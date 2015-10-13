@@ -27,7 +27,7 @@
 #define BUT_SW3     (1<<PD7)
 
 /**************** Prototypes *************************************/
-void POST(void);
+void POST(uint8_t pixels, uint8_t brightness);
 void startFrame(void);
 void endFrame(void);
 void pushPixel(uint8_t brightness, uint8_t r, uint8_t g, uint8_t b);
@@ -38,18 +38,19 @@ void init_IO(void);
 void init_interrupts(void);
 /**************** End Prototypes *********************************/
 
-void POST(void) {
+void POST(uint8_t pixels, uint8_t brightness) {
     //Bit Bang the LEDs to ensure they work despite hardware SPI
     
+    uint8_t i = 0;
     startFrame();
-    
-    //Shift Red
-    pushPixel(0xFF, 0xFF, 0x00, 0x00);
-    //Shift Green
-    pushPixel(0xFF, 0x00, 0xFF, 0x00);
-    //Shift Blue
-    pushPixel(0xFF, 0x00, 0x00, 0xFF);
-
+    while (i++ <= (pixels/3)) {
+        //Shift Red
+        pushPixel(brightness, 0xFF, 0x00, 0x00);
+        //Shift Green
+        pushPixel(brightness, 0x00, 0xFF, 0x00);
+        //Shift Blue
+        pushPixel(brightness, 0x00, 0x00, 0xFF);
+    }
     endFrame();
     
 }
@@ -115,33 +116,10 @@ void fadeForever(void) {
     }
 }
 
-int main(void)
-{
-    init_IO();
-    init_interrupts();
-
-    _delay_ms(200);
-
-    POST();
-    
-    while (BUT_PIN & BUT_SW3) {
-        ; //Loop until the button is pressed
-    }
-
+void rainbowForever(uint8_t pixels,uint8_t brightness) {    
     uint8_t cycleRed = 0xFF;
     uint8_t cycleGreen = 0;
     uint8_t cycleBlue = 0;
-    /*
-    128, 0, 0
-    120, 8, 0
-    112, 16, 0
-    104, 24, 0
-    96, 32, 0
-    88, 40, 0
-    80, 48, 0
-    72, 56, 0
-    64, 64, 0
-    */
 
     while(1)
     {
@@ -153,41 +131,56 @@ int main(void)
             cycleGreen = 0xFF - cycleRed;
         
             startFrame();
-            pushPixel(5, cycleRed, cycleGreen, cycleBlue);
-            pushPixel(5, cycleRed, cycleGreen, cycleBlue);
-            pushPixel(5, cycleRed, cycleGreen, cycleBlue);
+            for (uint8_t i=0; i<pixels; i++) { pushPixel(brightness, cycleRed, cycleGreen, cycleBlue); }
             endFrame();
 
             _delay_ms(2);
         }
         
+        //down green
         while (cycleGreen > 0) {
             cycleGreen -= 1;
             cycleBlue = 0xFF - cycleGreen;
         
             startFrame();
-            pushPixel(5, cycleRed, cycleGreen, cycleBlue);
-            pushPixel(5, cycleRed, cycleGreen, cycleBlue);
-            pushPixel(5, cycleRed, cycleGreen, cycleBlue);
+            for (uint8_t i=0; i<pixels; i++) { pushPixel(brightness, cycleRed, cycleGreen, cycleBlue); }
             endFrame();
 
             _delay_ms(2);
         }
-        
+
+        //down blue
         while (cycleBlue > 0) {
             cycleBlue -= 1;
             cycleRed = 0xFF - cycleBlue;
         
             startFrame();
-            pushPixel(5, cycleRed, cycleGreen, cycleBlue);
-            pushPixel(5, cycleRed, cycleGreen, cycleBlue);
-            pushPixel(5, cycleRed, cycleGreen, cycleBlue);
+            for (uint8_t i=0; i<pixels; i++) { pushPixel(brightness, cycleRed, cycleGreen, cycleBlue); }
             endFrame();
 
             _delay_ms(2);
         }
-        //down green
-        //down blue
+        
+    }
+}
+
+int main(void)
+{
+    init_IO();
+    init_interrupts();
+
+    _delay_ms(200);
+
+    POST(5, 31);
+    
+    while (BUT_PIN & BUT_SW3) {
+        ; //Loop until the button is pressed
+    }
+
+    while(1)
+    {
+        //fadeForever();
+        rainbowForever(17, 5);
         
     }
 }
