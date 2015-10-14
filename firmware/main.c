@@ -11,6 +11,16 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
+#define TOTPIXELS   17
+struct Pixels
+{
+    uint8_t brightness;
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+} pixel;
+
+struct Pixels pixels[TOTPIXELS];
 
 /************** Setup bitbang LEDs ********************/
 #define LED_DDR     DDRB
@@ -22,7 +32,7 @@
 #define BUT_DDR     DDRD
 #define BUT_PORT    PORTD
 #define BUT_PIN     PIND
-#define BUT_SW1    (1<<PD5)
+#define BUT_SW1     (1<<PD5)
 #define BUT_SW2     (1<<PD6)
 #define BUT_SW3     (1<<PD7)
 
@@ -34,6 +44,8 @@ void pushPixel(uint8_t brightness, uint8_t r, uint8_t g, uint8_t b);
 void shiftByte(uint8_t data);
 void shiftZero(void);
 void shiftOne(void);
+void initBuffer(void);
+void printBuffer(void);
 void init_IO(void);
 void init_interrupts(void);
 /**************** End Prototypes *********************************/
@@ -86,6 +98,23 @@ void shiftOne(void) {
     LED_PORT |= LED_DATA;                   //Data high
     LED_PORT |= LED_CLOCK;                  //Raise Clock to shift in Data
     LED_PORT &= ~LED_CLOCK;                  //Clock low
+}
+
+void initBuffer(void) {
+    for (uint8_t i=0; i<TOTPIXELS; i++) {
+        pixels[i].brightness = 31;
+        pixels[i].r = 0;
+        pixels[i].g = 0;
+        pixels[i].b = 0;
+    }
+}
+
+void printBuffer(void) {
+    startFrame();
+    for (uint8_t i=0; i<TOTPIXELS; i++) {
+        pushPixel(pixels[i].brightness, pixels[i].r, pixels[i].g, pixels[i].b);
+    }
+    endFrame();
 }
 
 void init_IO(void) {
@@ -180,7 +209,14 @@ int main(void)
     while(1)
     {
         //fadeForever();
-        rainbowForever(17, 5);
-        
+        //rainbowForever(17, 5);
+        initBuffer();
+        printBuffer();
+        _delay_ms(500);
+        pixels[0].r = 0xFF;
+        pixels[1].g = 0xFF;
+        pixels[2].b = 0xFF;
+        printBuffer();
+        _delay_ms(500);
     }
 }
