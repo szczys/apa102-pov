@@ -48,6 +48,8 @@ void initBuffer(void);
 void printBuffer(void);
 void init_IO(void);
 void init_interrupts(void);
+void larsonScanner(uint8_t repeat);
+void fadePixelsByHalf(void);
 /**************** End Prototypes *********************************/
 
 void POST(uint8_t pixels, uint8_t brightness) {
@@ -193,6 +195,48 @@ void rainbowForever(uint8_t pixels,uint8_t brightness) {
     }
 }
 
+void larsonScanner(uint8_t repeat) {
+    int8_t dir = 1;    //direction
+    uint8_t idx = 0;    //index
+    uint8_t pixStart = 128; //pixelStartValue
+    
+    initBuffer();
+    pixels[idx].r = pixStart; //light the first pixel
+    printBuffer();
+    
+    while (repeat > 0) {
+        
+        idx += dir; //Increment the index
+        
+        //If we're not at one end or the other react accordingly
+        if (idx == 0) {
+            --repeat;
+            dir = 1;
+        }
+        if (idx == (TOTPIXELS-1)) { dir = -1; }
+        
+        //Fade the tail before writing new pixel
+        fadePixelsByHalf();
+        
+        //Write the new pixel
+        pixels[idx].r = pixStart;
+        
+        //Show the changes we've made to the buffer
+        printBuffer();
+        
+        //Delay before next loop
+        _delay_ms(20);
+    }
+}
+
+void fadePixelsByHalf(void) {
+    for (uint8_t i=0; i<TOTPIXELS; i++) {
+        pixels[i].r = pixels[i].r/2;
+        pixels[i].g = pixels[i].g/2;
+        pixels[i].b = pixels[i].b/2;
+    }
+}
+
 int main(void)
 {
     init_IO();
@@ -218,5 +262,7 @@ int main(void)
         pixels[2].b = 0xFF;
         printBuffer();
         _delay_ms(500);
+        
+        larsonScanner(10);
     }
 }
