@@ -154,14 +154,20 @@ void fadeForever(void) {
     }
 }
 
-void rainbowForever(uint8_t pixels,uint8_t brightness) {    
+void rainbowForever(uint8_t pixels, uint8_t brightness, uint8_t repeat) {    
     uint8_t cycleRed = 0xFF;
     uint8_t cycleGreen = 0;
     uint8_t cycleBlue = 0;
+    uint8_t cycles = repeat;
+    
+    if (repeat == 0) { cycles = 1;}
 
-    while(1)
+    while(cycles > 0)
     {
-        //fadeForever();
+        if (repeat == 0) {
+            cycles = 1;
+        }
+        else { --cycles; }
         //down red
         
         while (cycleRed > 0) {
@@ -197,8 +203,7 @@ void rainbowForever(uint8_t pixels,uint8_t brightness) {
             endFrame();
 
             _delay_ms(2);
-        }
-        
+        }     
     }
 }
 
@@ -270,8 +275,8 @@ int main(void)
     while(1)
     {
         //fadeForever();
-        //rainbowForever(17, 5);
+        rainbowForever(17, 5, 3);
         
-        larsonScanner(0);
+        larsonScanner(4);
     }
 }
