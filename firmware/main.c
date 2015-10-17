@@ -6,7 +6,14 @@
 *				                *
 ********************************/
 
-#define F_CPU 1000000
+#define F_CPU 20000000
+
+//lfuse: 0b11010111
+//  This is 0xD7 for:
+//  -No clock divide by 8
+//  -Brown-out Detector
+//  -Full-swing crystal oscillator (20Mhz)
+
 
 #include <avr/io.h>
 #include <util/delay.h>
@@ -199,18 +206,28 @@ void larsonScanner(uint8_t repeat) {
     int8_t dir = 1;    //direction
     uint8_t idx = 0;    //index
     uint8_t pixStart = 128; //pixelStartValue
+    uint8_t cycles = repeat;
     
     initBuffer();
     pixels[idx].r = pixStart; //light the first pixel
     printBuffer();
     
-    while (repeat > 0) {
+    if (repeat == 0) {
+        // 0 is code for loop forever
+        cycles = 1;
+    }
+    
+    while (cycles > 0) {
         
         idx += dir; //Increment the index
         
         //If we're not at one end or the other react accordingly
         if (idx == 0) {
-            --repeat;
+            if (repeat == 0) {
+                // 0 is code for loop forever
+                cycles = 1;
+            }
+            else { --cycles; }
             dir = 1;
         }
         if (idx == (TOTPIXELS-1)) { dir = -1; }
@@ -244,7 +261,7 @@ int main(void)
 
     _delay_ms(200);
 
-    POST(5, 31);
+    POST(TOTPIXELS, 31);
     
     while (BUT_PIN & BUT_SW3) {
         ; //Loop until the button is pressed
@@ -254,15 +271,7 @@ int main(void)
     {
         //fadeForever();
         //rainbowForever(17, 5);
-        initBuffer();
-        printBuffer();
-        _delay_ms(500);
-        pixels[0].r = 0xFF;
-        pixels[1].g = 0xFF;
-        pixels[2].b = 0xFF;
-        printBuffer();
-        _delay_ms(500);
         
-        larsonScanner(10);
+        larsonScanner(0);
     }
 }
